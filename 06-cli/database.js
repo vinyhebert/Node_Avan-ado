@@ -1,5 +1,6 @@
 const {
-    readFile
+    readFile, 
+    writeFile
 } = require('fs')
 
 const { promisify } = require('util')
@@ -17,6 +18,7 @@ const { promisify } = require('util')
  */
 
 const readFileAsync = promisify(readFile)
+const writeFileAsync = promisify(writeFile)
 
 //outra forma de obter dados do json
 //const dadosJson = require('./herois.json')
@@ -31,11 +33,26 @@ class Database {
         return JSON.parse(arquivo.toString())
     }
 
-    escreverArquivo() {
-
+    async escreverArquivo(dados) {
+        await writeFileAsync(this.NOME_ARQUIVO, JSON.stringify(dados))
+        return true
 
     }
-
+    async cadastrar(heroi){
+        const dados = await this.obterDadosArquivo()
+        const id =  heroi.id <= 2 ? heroi.id : Date.now() // Caso o ID não seja passado usamos o Date.now para cria-lo dinamicamente
+        //concatenando objetos
+        const heroidComId = {
+            id,
+            ...heroi // esta é a forma de concatenar objetos no JS
+        }
+        const dadosFinal = [
+            ...dados,
+            heroidComId
+        ]
+        const resultado = await this.escreverArquivo(dadosFinal)
+        return resultado
+    }
     async listar (id) {
         const dados = await this.obterDadosArquivo()
         //Objetivo: Buscar pelo ID, caso não seja passado o ID a busca sera completa
